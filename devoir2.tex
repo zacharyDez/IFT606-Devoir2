@@ -1,0 +1,142 @@
+\documentclass[12pt]{article}
+
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amsthm}
+
+\usepackage[utf8]{inputenc}
+ 
+\newcommand{\M}{\mathcal{M}}
+\newcommand{\C}{\mathcal{C}}
+\newcommand{\A}{\mathcal{A}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newtheorem{fact}{Fact}
+\newtheorem{remark}{Remark}
+\newtheorem{definition}{Définition}
+
+\begin {document}
+
+Devoir 2, dû le 18 juin 2020, à remettre par Turnin avant 23h59. Un devoir à remettre par équipe de 2 ou 3 personnes.
+
+
+%%%%%%%%%%%%%%%%%%
+
+\section{Question 1}
+
+Vous allez implémenter une version allégée du protocole d'échange de clé interactif de Diffie-Hellman.. et ensuite argumenter pourquoi cette version n'est pas sécuritaire !
+
+Soit le protocole suivant:
+
+\begin{enumerate}
+	\item Alice pige un nombre aléatoire $x \in_R [2^{128}] = \{1, 2, \ldots, 2^{128} - 1, 2^{128} \}$ de 128 bits, calcule $h_A = 2^x$ mod $2^{255}$, et envoie $h_A$ à Bob.
+	\item Bob pige un nombre aléatoire $y \in_R [2^{128}]$ de 128 bits, calcule $h_B = 2^y$ mod $2^{255}$, et envoie $h_B$ à Alice.
+	\item Alice output la clé $k_A = h_B^x$ mod $2^{255}$. 
+	\item Bob output la clé $k_B = h_A^y$ mod $2^{255}$.
+\end{enumerate}
+
+Les parties 1 et 3 du protocole correspondent au code de Alice, et les parties 2 et 4 au code de Bob
+
+Écrivez le code pour ces 4 algorithmes en langague C ou python. Fournissez le texte de ce code source avec la remise de votre devoir, comme texte dans le corps de votre devoir. N'oubliez pas de vous assurez que votre protocole soit calculatoirement efficace.. en particulier, rappelez-vous comment performer l'exponentiation modulaire efficacement !
+
+Pour les équipes de 3 personnes, une personne jouera Alice, une jouera Bob, et une Eve dans ce qui suit. Pour les équipes de 2 personnes, une personne jouera Alice et Bob, et une Eve dans ce qui suit. 
+
+
+%%%%%%%%%%%%%%%%%%
+
+\subsection{Question 1.a}
+
+Essayer de rouler le protocole ici-haut entre Alice et Bob avec les messages passant entre les mains de Eve, qui peut voir les messages mais ne les modifient pas. Essayer ensuite de le rouler avec Eve qui agit comme un homme-dans-le-milieu, comme pour l'attaque vue en cours contre le protocole de Diffie-Hellman.
+
+Du point de vue d'Alice et de Bob, si il ne peuvent pas communiquer directement, est-ce qu'il y a une différence entre leurs vues locales dans ces 2 cas ?
+
+Si ils peuvent maintenant communiquer pour comparer $k_A$ et $k_B$, est-ce que $k_A = k_B$ dans les deux cas ?
+
+
+%%%%%%%%%%%%%%%%%%
+
+\subsection{Question 1.b}
+
+Si Alice et Bob ont déjà échangé de manière sécuritaire leurs clés publiques, peuvent-ils éviter une telle attaque de l'homme-du-milieu ? Comment ?
+
+
+%%%%%%%%%%%%%%%%%%
+
+\subsection{Question 1.c}
+
+
+Sans même faire d'attaque homme-du-milieu, avec Eve qui observe seulement les messages sans les modifier, pouvez-vous quand même briser ce protocole avec Eve qui est calculatoirement efficace ? En particulier, est-ce que la clé semble fournir beaucoup d'aléa ? Quel est le problème ici ?
+
+
+%%%%%%%%%%%%%%%%%%
+
+\section{Question 2}
+
+Nous voulons qu'Alice et Bob puissent communiquer de façon sécurisé, disons Alice veut envoyer un message $m$ à Bob de sorte à ce que la transmission de $m$ soit faite de manière confidentielle, intègre et authentifié.
+Ils communiquent sur un réseau non-sécurisé, et donc, en particulier, il est possible qu'un adversaire puisse:
+\begin{itemize}
+	\item lire toutes les communications transmises,
+	\item modifier les communications,
+	\item tenter de se faire passer pour Alice.
+\end{itemize}
+
+Ils veulent utiliser les systèmes cryptographiques suivants:
+
+\begin{itemize}
+	\item $\Pi_{CPriv} = (Gen_{CPriv}, E_{CPriv}, D_{CPriv})$, un système de chiffrement à clés privées sécuritaire,
+	\item $\Pi_{MAC} = (Gen_{MAC}, MAC, Verif_{MAC})$, un système d'authentification à clés privées sécuritaire,
+	\item $\Pi_{CPub} = (Gen_{CPub}, E_{CPub}, D_{CPub})$, un système de chiffrement à clés publiques sécuritaire,
+	\item $\Pi_{Sign} = (Gen_{Sign}, Sign, Verif_{Sign})$, un système de signatures digitales sécuritaire,
+	\item $\Pi_{KE} =  (\Pi_A^i, \Pi_B^i)$, un système d'échange de clés interactif sécuritaire.
+\end{itemize}
+
+Alice et Bob ont tous deux confiance en Charlie pour émettre des certificats de confiance, et Alice et Bob connaissent tous deux la clé public $pk_C$ de Charlie. Alice a reçu un certificat $cert_{C \rightarrow A}$ de Charlie et Bob a reçu un certificat $cert_{C \rightarrow B}$ de Charlie.
+
+
+%%%%%%%%%%%%%%%%%%
+
+\subsection{Question 2.a}
+
+En utilisant les systèmes cryptographiques  $\Pi_{CPriv}, \Pi_{MAC},  \Pi_{CPub},  \Pi_{Sign}, \Pi_{KE}$ ainsi que les certificats $cert_{C \rightarrow A}$ et $cert_{C \rightarrow B}$ et la clé publique de Charlie $pk_C$, donner le pseudo-code d'un protocole qui permet à Alice et Bob d'établir une clé privée partagée $k$ avec les propriétés suivantes:
+\begin{itemize}
+	\item robuste: si les messages transmis de Alice vers Bob et de Bob vers Alice ne sont pas modifiés lors de leur transmission, Alice et Bob n'abandonnent pas le protocole et produisent tous les deux la même clé $k$ en sortie de protocole,
+	\item secret: seulement Alice et Bob peuvent calculer de l'information sur $k$ à la fin du protocole,
+	\item intègre: si Alice et Bob n'abandonnent pas le protocole, ils produisent tous les deux la même clé $k$,
+	\item authentifié: Alice peut être certaine que c'est bien Bob qui a communiqué avec elle pour établir cette clé, et vice-versa.
+\end{itemize}
+
+Argumenter pourquoi votre protocole satisfait ces propriétés.
+
+
+%%%%%%%%%%%%%%%%%%
+
+\subsection{Question 2.b}
+
+Argumenter en un court paragraphe comment utiliser une telle clé secrète $k$ pour transmettre un message $m$ d'Alice vers Bob. Vous pouvez donner une description très haut niveau de ce qui a déjà été fait au devoir 1.
+
+
+%%%%%%%%%%%%%%%%%%
+
+\subsection{Question 2.c}
+
+Avec quel algorithme a été produit $pk_C$, la clé publique de Charlie ?
+
+Quelle entrée est-ce que cet algorithme prend ?
+
+Et est-ce que $pk_C$ est la seule sortie de cet algorithme ? 
+
+Si non, quelle autre sortie a-t-il ?
+
+Roule-t-il en temps polynomial ? Pourquoi ?
+
+Est-ce que cet algorithme pourrait être déterministe ? Pourquoi ?
+
+Quel est le contenu de $cert_{C \rightarrow A}$ ? Et celui de $cert_{C \rightarrow B}$ ?
+
+
+\end{document}
+
