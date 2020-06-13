@@ -20,7 +20,9 @@ def test_public_key_exchange():
 
     # 5. Bob calcule la cle avec h_a
     kB = get_shared_k(h_a, k_b, p)
+    print(f"Do Alice and Bob have the same shared key: {kA==kB}. Value: {kA}.")
 
+    assert(false)
     assert(kA==kB)
 
 def test_man_in_middle():
