@@ -39,6 +39,7 @@ if __name__=="__main__":
     kB = get_shared_k(h_be, k_b, p)
     kBE = get_shared_k(h_b, k_be, p)
 
+    print(f"Public keys: {h_a, h_b, h_ae, h_be}")
     print(f"Alice's private key:{k_a}")
     print(f"Bob's private key:{k_b}")
     print(f"Eve's private for Alice key:{k_ae}")
